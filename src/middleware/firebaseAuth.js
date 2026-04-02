@@ -1,15 +1,30 @@
 const { initFirebase, getAdmin } = require('../config/firebase');
 const User = require('../models/User');
 
+/** GET list endpoints that work without a Bearer token (this project default). */
+const PUBLIC_GET_PATHS = new Set(['/api/players', '/api/teams']);
+
+function normalizedRequestPath(req) {
+  const raw = (req.originalUrl || req.url || '').split('?')[0];
+  const p = raw.replace(/\/+$/, '') || '/';
+  if (PUBLIC_GET_PATHS.has(p)) return p;
+  const base = (req.baseUrl || '').replace(/\/+$/, '');
+  const sub = req.path && req.path !== '/' ? req.path.replace(/\/+$/, '') : '';
+  const joined = `${base}${sub}`.replace(/\/+/g, '/').replace(/\/+$/, '') || '/';
+  return joined;
+}
+
 /**
- * When PUBLIC_API_READ=true, allow unauthenticated GET on these mounts only (list data).
- * POST/PATCH/DELETE still require Firebase. Do not enable on public internet unless you accept that anyone can read this data.
+ * Unauthenticated GET /api/players and /api/teams — no env vars needed.
+ * Set REQUIRE_AUTH_EVERYWHERE=true (e.g. on Render) to require Firebase for those too.
+ * POST/PUT/PATCH/DELETE and /api/matches/* still require a valid Bearer token.
  */
 function allowUnauthenticatedPublicRead(req) {
-  if (process.env.PUBLIC_API_READ !== 'true') return false;
+  if (process.env.REQUIRE_AUTH_EVERYWHERE === 'true') return false;
+  if (process.env.PUBLIC_API_READ === 'false') return false;
   if (req.method !== 'GET') return false;
-  const base = req.baseUrl || '';
-  return base === '/api/players' || base === '/api/teams';
+  const p = normalizedRequestPath(req);
+  return PUBLIC_GET_PATHS.has(p);
 }
 
 async function firebaseAuth(req, res, next) {
