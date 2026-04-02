@@ -22,7 +22,11 @@ async function firebaseAuth(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) {
-    return res.status(401).json({ error: 'Missing Bearer token' });
+    return res.status(401).json({
+      error: 'Missing Bearer token',
+      hint:
+        'This route requires Firebase auth. Use the app after sign-in, or call with header Authorization: Bearer <ID token>. Public check: GET /health',
+    });
   }
 
   try {
