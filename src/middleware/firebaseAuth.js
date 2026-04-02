@@ -1,7 +1,22 @@
 const { initFirebase, getAdmin } = require('../config/firebase');
 const User = require('../models/User');
 
+/**
+ * When PUBLIC_API_READ=true, allow unauthenticated GET on these mounts only (list data).
+ * POST/PATCH/DELETE still require Firebase. Do not enable on public internet unless you accept that anyone can read this data.
+ */
+function allowUnauthenticatedPublicRead(req) {
+  if (process.env.PUBLIC_API_READ !== 'true') return false;
+  if (req.method !== 'GET') return false;
+  const base = req.baseUrl || '';
+  return base === '/api/players' || base === '/api/teams';
+}
+
 async function firebaseAuth(req, res, next) {
+  if (allowUnauthenticatedPublicRead(req)) {
+    return next();
+  }
+
   if (process.env.DEV_SKIP_AUTH === 'true') {
     req.user = { uid: 'dev-user', email: 'dev@cricnic.local', name: 'Dev User' };
     req.dbUser = await User.findOneAndUpdate(
