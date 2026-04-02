@@ -1,0 +1,4 @@
+node_modules/
+.env
+*cricnicfirebase-service-account*.json
+*-firebase-adminsdk*.json
