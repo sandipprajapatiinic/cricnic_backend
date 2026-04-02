@@ -1,8 +1,10 @@
 const { initFirebase, getAdmin } = require('../config/firebase');
 const User = require('../models/User');
 
-/** GET list endpoints that work without a Bearer token (this project default). */
-const PUBLIC_GET_PATHS = new Set(['/api/players', '/api/teams']);
+/** Exact GET paths without Bearer (this project default). */
+const PUBLIC_GET_PATHS = new Set(['/api/players', '/api/teams', '/api/matches']);
+
+const MONGO_ID_HEX = /^[a-fA-F0-9]{24}$/i;
 
 function normalizedRequestPath(req) {
   const raw = (req.originalUrl || req.url || '').split('?')[0];
@@ -14,17 +16,26 @@ function normalizedRequestPath(req) {
   return joined;
 }
 
+/** GET /api/matches/:id only (list is in PUBLIC_GET_PATHS). */
+function isPublicMatchByIdPath(p) {
+  if (!p.startsWith('/api/matches/')) return false;
+  const rest = p.slice('/api/matches/'.length);
+  if (rest.includes('/')) return false;
+  return MONGO_ID_HEX.test(rest);
+}
+
 /**
- * Unauthenticated GET /api/players and /api/teams — no env vars needed.
- * Set REQUIRE_AUTH_EVERYWHERE=true (e.g. on Render) to require Firebase for those too.
- * POST/PUT/PATCH/DELETE and /api/matches/* still require a valid Bearer token.
+ * Unauthenticated GET for dashboard + live/score views: players, teams, matches list, match by id.
+ * Set REQUIRE_AUTH_EVERYWHERE=true to require Firebase for all of these.
+ * POST/PATCH and /api/matches/:id/balls etc. still require Bearer.
  */
 function allowUnauthenticatedPublicRead(req) {
   if (process.env.REQUIRE_AUTH_EVERYWHERE === 'true') return false;
   if (process.env.PUBLIC_API_READ === 'false') return false;
   if (req.method !== 'GET') return false;
   const p = normalizedRequestPath(req);
-  return PUBLIC_GET_PATHS.has(p);
+  if (PUBLIC_GET_PATHS.has(p)) return true;
+  return isPublicMatchByIdPath(p);
 }
 
 async function firebaseAuth(req, res, next) {
