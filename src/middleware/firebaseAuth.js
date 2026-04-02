@@ -70,9 +70,16 @@ async function firebaseAuth(req, res, next) {
     });
   }
 
+  let adminSdk;
   try {
     initFirebase();
-    const adminSdk = getAdmin();
+    adminSdk = getAdmin();
+  } catch (configErr) {
+    console.error('Firebase Auth Config Error:', configErr);
+    return res.status(500).json({ error: 'Server Auth Misconfigured', detail: configErr.message });
+  }
+
+  try {
     const decoded = await adminSdk.auth().verifyIdToken(token);
     req.user = decoded;
 
