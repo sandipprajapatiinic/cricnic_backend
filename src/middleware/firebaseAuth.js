@@ -106,8 +106,8 @@ async function firebaseAuth(req, res, next) {
     req.dbUser = await User.findOneAndUpdate(
       { firebaseUid: decoded.uid },
       {
-        $set: { name, email },
-        $setOnInsert: { firebaseUid: decoded.uid, role: 'user' },
+        $set: { email },
+        $setOnInsert: { firebaseUid: decoded.uid, role: 'user', name, isProfileComplete: false },
       },
       { upsert: true, new: true }
     );

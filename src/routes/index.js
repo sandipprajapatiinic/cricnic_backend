@@ -6,6 +6,7 @@ function buildApiRouter() {
   router.use('/teams', require('./teams'));
   router.use('/players', require('./players'));
   router.use('/matches', require('./matches'));
+  router.use('/users', require('./users'));
   return router;
 }
 
