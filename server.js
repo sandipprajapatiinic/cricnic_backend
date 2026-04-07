@@ -5,6 +5,7 @@ const os = require('os');
 const cors = require('cors');
 const express = require('express');
 const { Server } = require('socket.io');
+const morgan = require('morgan');
 const { connectDb } = require('./src/config/db');
 const { buildApiRouter } = require('./src/routes');
 
@@ -34,6 +35,7 @@ function listLanUrls() {
   return urls;
 }
 const app = express();
+app.use(morgan('dev'));
 const server = http.createServer(app);
 
 const corsOrigin = process.env.CORS_ORIGIN || '*';
