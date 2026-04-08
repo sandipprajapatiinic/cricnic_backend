@@ -45,7 +45,8 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+/** Default 100kb is too small for base64 profile photos on PUT /api/users/me */
+app.use(express.json({ limit: '15mb' }));
 
 /** No DB — for device / login connectivity checks (also under /api/health). */
 app.get('/health', (req, res) => res.json({ ok: true }));
