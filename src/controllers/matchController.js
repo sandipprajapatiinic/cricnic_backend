@@ -159,6 +159,24 @@ async function listMatches(req, res) {
   }
 }
 
+async function deleteMatch(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid match id' });
+    }
+    const match = await Match.findById(id);
+    if (!match) {
+      return res.status(404).json({ error: 'Match not found' });
+    }
+    await Ball.deleteMany({ matchId: match._id });
+    await Match.deleteOne({ _id: match._id });
+    return res.status(204).send();
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
 async function changeBowler(req, res) {
   const io = req.app.get('io');
   try {
@@ -305,6 +323,7 @@ module.exports = {
   createMatch,
   getMatchById,
   listMatches,
+  deleteMatch,
   addBall,
   changeBowler,
   undoBall,
