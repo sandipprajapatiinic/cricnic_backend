@@ -7,13 +7,14 @@ const { hydrateTeam, hydrateTeams } = require('../services/teamPlayers');
 
 async function createTeam(req, res) {
   try {
-    const { name, playerIds } = req.body;
+    const { name, playerIds, logoUrl } = req.body;
     if (!name || typeof name !== 'string') {
       return res.status(400).json({ error: 'name is required' });
     }
     const team = await Team.create({
       name: name.trim(),
       players: Array.isArray(playerIds) ? playerIds : [],
+      logoUrl: logoUrl || '',
       createdBy: req.dbUser._id,
     });
     const out = await hydrateTeam(team);

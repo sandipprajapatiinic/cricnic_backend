@@ -12,11 +12,16 @@ router.put('/me', firebaseAuth, async (req, res) => {
   try {
     const updates = req.body;
     const updatePayload = {};
-    const allowedFields = ['name', 'dateOfBirth', 'gender', 'profileImageUrl'];
+    const allowedFields = ['name', 'fullName', 'dateOfBirth', 'gender', 'profileImageUrl'];
 
     allowedFields.forEach(field => {
       if (updates[field] !== undefined) {
-        updatePayload[field] = updates[field];
+        // Map fullName (frontend) to name (backend model)
+        if (field === 'fullName') {
+          updatePayload.name = updates[field];
+        } else {
+          updatePayload[field] = updates[field];
+        }
       }
     });
 

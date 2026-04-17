@@ -91,7 +91,8 @@ async function hydrateMatchTeams(matchDoc) {
     const batMap = new Map(
       batting.map((p) => [playerKey(p), p]).filter((e) => e[0] != null)
     );
-    m.teamA = { ...m.teamA, players: batting };
+    const batObj = m.teamA.toObject ? m.teamA.toObject() : m.teamA;
+    m.teamA = { ...batObj, players: batting };
 
     const sid = refToIdString(m.striker);
     if (sid && batMap.has(sid)) m.striker = batMap.get(sid);
@@ -111,7 +112,8 @@ async function hydrateMatchTeams(matchDoc) {
     const fieldMap = new Map(
       fieldWithFigs.map((p) => [playerKey(p), p]).filter((e) => e[0] != null)
     );
-    m.teamB = { ...m.teamB, players: fieldWithFigs };
+    const fieldObj = m.teamB.toObject ? m.teamB.toObject() : m.teamB;
+    m.teamB = { ...fieldObj, players: fieldWithFigs };
 
     const bid = refToIdString(m.bowler);
     if (bid && fieldMap.has(bid)) m.bowler = fieldMap.get(bid);

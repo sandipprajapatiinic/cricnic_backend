@@ -4,6 +4,7 @@ const teamSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
+    logoUrl: { type: String, default: '' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
